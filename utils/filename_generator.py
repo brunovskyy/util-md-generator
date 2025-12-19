@@ -3,6 +3,8 @@ import re
 from pathlib import Path
 from typing import List, Dict, Any, Set
 
+import config.naming_config
+
 
 class FilenameGenerator:
     """Generates unique filenames based on ordered key patterns."""
@@ -31,6 +33,30 @@ class FilenameGenerator:
         self.output_directory = output_directory
         self.generated_filenames: Set[str] = set()
         self.filename_counts: Dict[str, int] = {}
+    
+    def _clean_ignored_characters(self, text: str) -> str:
+        """
+        Remove ignored characters from text before filename generation.
+        
+        This method removes all characters specified in the IGNORED_CHARACTERS_FOR_NAMING
+        configuration. The removal happens BEFORE any sanitization, allowing values like
+        "[[Minor]]" to become "Minor" when '[' and ']' are in the ignored list.
+        
+        Args:
+            text: Raw text from CSV value
+            
+        Returns:
+            Text with all ignored characters removed
+        """
+        if not text:
+            return text
+        
+        cleaned = text
+        # Access the config at runtime to pick up any dynamic changes
+        for char in config.naming_config.IGNORED_CHARACTERS_FOR_NAMING:
+            cleaned = cleaned.replace(char, '')
+        
+        return cleaned
     
     def _sanitize_filename_component(self, text: str) -> str:
         """
@@ -73,7 +99,11 @@ class FilenameGenerator:
             value = row.get(key, '').strip()
             
             if value:
-                sanitized_component = self._sanitize_filename_component(value)
+                # First, clean ignored characters (dynamic from config)
+                cleaned_value = self._clean_ignored_characters(value)
+                
+                # Then, sanitize for filesystem safety
+                sanitized_component = self._sanitize_filename_component(cleaned_value)
                 if sanitized_component:
                     filename_components.append(sanitized_component)
         

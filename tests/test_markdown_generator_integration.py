@@ -91,26 +91,6 @@ def test_markdown_generator_with_many_naming_keys(tmp_path):
     assert (output_dir / "2024 - December - Audit - Critical.md").exists()
 
 
-def test_markdown_generator_without_naming_keys_uses_legacy(tmp_path):
-    """Test that MarkdownGenerator falls back to legacy method when no naming keys provided."""
-    output_dir = tmp_path / "output"
-    output_dir.mkdir()
-    
-    rows = [
-        {"name": "Alice", "email": "alice@example.com"},
-        {"name": "Bob", "email": "bob@example.com"}
-    ]
-    
-    # No naming_keys parameter - should use legacy method
-    generator = MarkdownGenerator(str(output_dir), ["name", "email"])
-    files_created = generator.generate_files(rows)
-    
-    assert files_created == 2
-    # Legacy method uses first selected key
-    assert (output_dir / "Alice.md").exists()
-    assert (output_dir / "Bob.md").exists()
-
-
 def test_markdown_generator_with_empty_naming_key_values(tmp_path):
     """Test handling of empty values in naming keys."""
     output_dir = tmp_path / "output"

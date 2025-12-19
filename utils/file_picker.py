@@ -17,7 +17,6 @@ def pick_csv_file() -> Optional[str]:
     try:
         import win32gui
         import win32con
-        from win32com.shell import shell, shellcon
         
         # Create file dialog
         filters = "CSV Files (*.csv)\0*.csv\0All Files (*.*)\0*.*\0"

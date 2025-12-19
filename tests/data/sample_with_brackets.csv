@@ -1,0 +1,6 @@
+finding type,severity,status,date,description
+[[Critical]],[[High]],Open,2024-12-19,Database vulnerability found
+[[Minor]],[[Low]],Closed,2024-12-18,Documentation typo fixed
+[[Major]],[[Medium]],In Progress,2024-12-17,API endpoint performance issue
+[[Critical]],[[High]],Open,2024-12-16,Authentication bypass detected
+[[Minor]],[[Low]],Open,2024-12-15,UI alignment issue

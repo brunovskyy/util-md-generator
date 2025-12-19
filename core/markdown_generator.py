@@ -1,5 +1,4 @@
 """Markdown file generation with YAML frontmatter."""
-import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import yaml
@@ -47,60 +46,6 @@ class MarkdownGenerator:
             self.filename_generator = FilenameGenerator(self.naming_keys, self.output_dir)
         else:
             self.filename_generator = None
-    
-    def _sanitize_filename(self, name: str) -> str:
-        """
-        Sanitize string for use as filename.
-        
-        Args:
-            name: Raw filename string
-            
-        Returns:
-            Sanitized filename
-        """
-        # Remove invalid Windows filename characters
-        name = re.sub(r'[<>:"/\\|?*]', '_', name)
-        
-        # Remove control characters
-        name = re.sub(r'[\x00-\x1f\x7f]', '', name)
-        
-        # Trim whitespace and dots
-        name = name.strip('. ')
-        
-        # Ensure not empty
-        if not name:
-            name = 'unnamed'
-        
-        # Limit length
-        if len(name) > 200:
-            name = name[:200]
-        
-        return name
-    
-    def _generate_filename(self, row: Dict[str, Any], row_index: int) -> str:
-        """
-        Generate filename for a row.
-        
-        Args:
-            row: Data row
-            row_index: Index of row (for fallback)
-            
-        Returns:
-            Filename without extension
-        """
-        # Try to use first selected key with data
-        for key in self.selected_keys:
-            value = row.get(key, '').strip()
-            if value:
-                return self._sanitize_filename(value)
-        
-        # Try any key with data
-        for key, value in row.items():
-            if value and value.strip():
-                return self._sanitize_filename(value.strip())
-        
-        # Fallback to row index
-        return f"row_{row_index + 1}"
     
     def _escape_yaml_value(self, value: Any) -> Any:
         """
@@ -191,34 +136,7 @@ class MarkdownGenerator:
                 except Exception as e:
                     raise MarkdownGenerationError(f"Failed to generate file for row {row_index + 1}: {e}")
         else:
-            # Legacy filename generation (fallback)
-            filename_counts: Dict[str, int] = {}
-            
-            for row_index, row in enumerate(rows):
-                try:
-                    # Generate filename using legacy method
-                    base_filename = self._generate_filename(row, row_index)
-                    
-                    # Handle duplicate filenames
-                    if base_filename in filename_counts:
-                        filename_counts[base_filename] += 1
-                        filename = f"{base_filename}_{filename_counts[base_filename]}"
-                    else:
-                        filename_counts[base_filename] = 0
-                        filename = base_filename
-                    
-                    # Create full path
-                    file_path = self.output_dir / f"{filename}.md"
-                    
-                    # Generate content
-                    content = self._create_frontmatter(row)
-                    
-                    # Write file
-                    file_path.write_text(content, encoding='utf-8')
-                    self.files_created += 1
-                    
-                except Exception as e:
-                    raise MarkdownGenerationError(f"Failed to generate file for row {row_index + 1}: {e}")
+            raise MarkdownGenerationError("No naming keys provided - cannot generate filenames")
         
         return self.files_created
     

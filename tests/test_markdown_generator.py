@@ -14,7 +14,7 @@ def test_markdown_generator_creates_files(tmp_path):
         {"name": "Bob", "age": "25", "city": "LA"}
     ]
     
-    generator = MarkdownGenerator(str(output_dir), ["name", "age"])
+    generator = MarkdownGenerator(str(output_dir), ["name", "age"], ["name"])
     files_created = generator.generate_files(rows)
     
     assert files_created == 2
@@ -29,7 +29,7 @@ def test_markdown_generator_creates_valid_yaml(tmp_path):
     
     rows = [{"name": "Alice", "age": "30"}]
     
-    generator = MarkdownGenerator(str(output_dir), ["name", "age"])
+    generator = MarkdownGenerator(str(output_dir), ["name", "age"], ["name"])
     generator.generate_files(rows)
     
     content = (output_dir / "Alice.md").read_text()
@@ -47,7 +47,7 @@ def test_markdown_generator_sanitizes_filenames(tmp_path):
     
     rows = [{"name": "Alice/Bob<>|:*?", "age": "30"}]
     
-    generator = MarkdownGenerator(str(output_dir), ["name"])
+    generator = MarkdownGenerator(str(output_dir), ["name"], ["name"])
     generator.generate_files(rows)
     
     # Should replace invalid chars with underscores
@@ -67,18 +67,18 @@ def test_markdown_generator_handles_duplicates(tmp_path):
         {"name": "Alice", "age": "25"}
     ]
     
-    generator = MarkdownGenerator(str(output_dir), ["name"])
+    generator = MarkdownGenerator(str(output_dir), ["name"], ["name"])
     files_created = generator.generate_files(rows)
     
     assert files_created == 2
     assert (output_dir / "Alice.md").exists()
-    assert (output_dir / "Alice_1.md").exists()
+    assert (output_dir / "Alice - 2.md").exists()
 
 
 def test_markdown_generator_rejects_invalid_output_dir():
     """Test that generator rejects non-existent output directory."""
     with pytest.raises(ValueError, match="does not exist"):
-        MarkdownGenerator("/nonexistent/path", ["name"])
+        MarkdownGenerator("/nonexistent/path", ["name"], ["name"])
 
 
 def test_markdown_generator_rejects_empty_keys(tmp_path):
@@ -87,4 +87,4 @@ def test_markdown_generator_rejects_empty_keys(tmp_path):
     output_dir.mkdir()
     
     with pytest.raises(ValueError, match="cannot be empty"):
-        MarkdownGenerator(str(output_dir), [])
+        MarkdownGenerator(str(output_dir), [], [])

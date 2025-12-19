@@ -8,6 +8,7 @@ A Windows-compatible CLI application that converts CSV files into individual Mar
 - Native Windows file/folder picker dialogs
 - Column selection with visual toggle interface
 - **Custom filename pattern selection with ordering support**
+- **Dynamic character cleaning from values (configurable ignored characters)**
 - YAML frontmatter generation for Obsidian properties
 - Automatic filename sanitization
 - Intelligent duplicate filename handling with sequential numbering
@@ -96,6 +97,8 @@ If you have multiple findings with the same type, severity, and date, files will
 
 ```
 csv-to-md/
+├── config/                  # Configuration
+│   └── naming_config.py    # Ignored characters config
 ├── core/                    # Business logic
 │   ├── csv_parser.py       # CSV loading and validation
 │   ├── cli_ui.py           # Interactive CLI interface
@@ -107,11 +110,66 @@ csv-to-md/
 │   ├── test_csv_parser.py
 │   ├── test_cli_ui_ordered.py
 │   ├── test_filename_generator.py
+│   ├── test_ignored_characters.py
 │   ├── test_markdown_generator.py
 │   └── test_markdown_generator_integration.py
 ├── main.py                  # Application entry point
 └── README.md
 ```
+
+## Configuration
+
+### Ignored Characters for Naming
+
+The application supports dynamic character cleaning during filename generation. Characters defined in the configuration are automatically removed from CSV values before creating filenames.
+
+**Configuration File**: `config/naming_config.py`
+
+**Default Configuration**:
+```python
+IGNORED_CHARACTERS_FOR_NAMING = [
+    '[',   # Left square bracket
+    ']',   # Right square bracket
+]
+```
+
+**How It Works**:
+
+1. CSV values are read (e.g., `[[Critical]]`)
+2. Ignored characters are removed based on config (becomes `Critical`)
+3. Filesystem sanitization is applied (removes invalid characters like `:`, `|`, etc.)
+4. The cleaned value is used in the filename
+
+**Example**:
+
+Given this CSV data:
+```csv
+finding_type,severity
+[[Critical]],[[High]]
+[[Minor]],[[Low]]
+```
+
+With naming pattern: `finding_type - severity`
+
+Generated filenames:
+- `Critical - High.md` (brackets removed)
+- `Minor - Low.md` (brackets removed)
+
+**Customization**:
+
+To ignore different characters, simply modify the list in `config/naming_config.py`:
+
+```python
+IGNORED_CHARACTERS_FOR_NAMING = [
+    '[', ']',      # Brackets
+    '(', ')',      # Parentheses  
+    '{', '}',      # Braces
+    '#',           # Hash
+    '★', '•',      # Unicode symbols
+]
+```
+
+Changes take effect immediately without code modifications. The system automatically adapts to whatever characters are in the configuration list.
 
 ## Running Tests
 
@@ -134,6 +192,7 @@ uv run pytest --cov=core --cov=utils
 - **Error Handling**: Comprehensive validation at every step
 - **YAML Compliant**: Proper escaping and formatting via PyYAML
 - **Filename Safety**: Sanitizes invalid characters for Windows filesystems
+- **Dynamic Character Cleaning**: Configurable list of characters to ignore in naming
 - **Unique Filenames**: Checks both in-memory and on-disk for duplicates
 - **Order-Preserving**: Filename components follow exact selection order
 
