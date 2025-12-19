@@ -1,0 +1,6 @@
+name,email,phone,department,tags
+Alice Smith,alice@example.com,555-0001,Engineering,team-lead
+Bob Jones,bob@example.com,555-0002,Marketing,creative
+Carol White,carol@example.com,555-0003,Sales,client-facing
+David Brown,david@example.com,555-0004,Engineering,backend
+Emma Davis,emma@example.com,555-0005,HR,recruiting
